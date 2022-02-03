@@ -1,0 +1,56 @@
+# run this playbook in test mode:
+#  ansible-playbook --inventory localhost, --check --diff files.yaml
+# creates ~/.ansible directory for temporary storage
+
+- name: manage miscellaneous files
+  hosts: localhost
+  connection: local	# do not use ssh
+  gather_facts: no	# save time
+
+  vars:			# local to this playbook
+
+    directories:
+      - /boot/grub2
+      - /var/log/httpd
+      - /var/spool/cron
+
+    begone:
+      - /.readahead
+      - /etc/gshadow-	# see the group shadow file task in another playbook
+
+    unprivileged:
+      - /usr/bin/pkexec		# use su or sudo instead
+      - /usr/lib/polkit-1/polkit-agent-helper-1	# use su or sudo instead
+
+  tasks:
+
+    - name: manage directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: '0'
+        group: '0'
+        mode: 0755
+      with_items: "{{ directories }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: remove unwanted files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items: "{{ begone }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: remove setuid/setgid bits
+      file:
+        path: "{{ item }}"
+        mode: ug-s
+      with_items: "{{ unprivileged }}"
+      loop_control:
+        label: "{{ item }}"
+
+#    - name: print all Ansible variables
+#      debug:
+#        var: vars

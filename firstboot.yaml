@@ -1,0 +1,81 @@
+# HPC non-cluster systems
+# run this playbook once immediately after (re)installing
+#
+# run this playbook in test mode:
+#  ansible-playbook --inventory localhost, --check --diff firstboot.yaml
+# creates ~/.ansible directory for temporary storage
+
+- name: miscellaneous one-time changes
+  hosts: localhost
+  connection: local	# do not use ssh
+  gather_facts: no	# save time
+
+  tasks:
+
+    - name: set default locale to C
+      copy:
+        dest: /etc/locale.conf
+        content: "LANG=\"C\"\n"
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+
+    - name: set time zone to UTC
+      timezone:
+        name: UTC
+
+    # "command: systemctl set-default multi-user.target" is the most
+    # portable way to do this, but this task provides proper reporting
+    # of changes for root and non-root alike in and out of check mode.
+    - name: boot to multi-user.target
+      file:
+        src: /usr/lib/systemd/system/multi-user.target
+        dest: /etc/systemd/system/default.target
+        state: link
+
+    # /etc/gshadow- is removed in another playbook
+    - name: do not use group shadow file
+      command: grpunconv
+      args:
+        removes: /etc/gshadow
+
+    - name: disable IPv6
+      copy:
+        dest: /etc/sysctl.d/50-noipv6.conf
+        content: |
+          # disable IPv6
+          net.ipv6.conf.all.disable_ipv6 = 1
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+
+    - name: disable IPv6 in Postfix
+      lineinfile:
+        path: /etc/postfix/main.cf
+        backrefs: yes
+        regexp: '^(inet_protocols\s*=\s*)all'
+        line: '\1ipv4'
+        state: present
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+      notify: reload postfix
+
+#    - name: print all Ansible variables
+#      debug:
+#        var: vars
+
+  handlers:
+
+    - name: reload postfix
+      service:
+        name: postfix
+        state: reloaded
+        enabled: yes
+
+# all import_playbook files are parsed before execution
+- import_playbook: cvmfs.yaml
+- import_playbook: files.yaml
