@@ -133,6 +133,16 @@
         enabled: yes
       when: httpd_package_installed.rc == 0
 
+    - name: establish CVMFS re-sign cron job
+      cron:
+        name: re-sign cvmfs whitelist
+        user: root
+        day: "1"
+        hour: "16"	# UTC, mid-morning in the United States
+        minute: "3"
+        job: cvmfs_server resign -f -d 35 colorado.xsede.org > /dev/null
+      when: "'/srv/cvmfs/colorado.xsede.org/.cvmfswhitelist' is file"
+
 #    - name: print all Ansible variables
 #      debug:
 #        var: vars
