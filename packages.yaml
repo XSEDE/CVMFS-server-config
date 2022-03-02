@@ -1,0 +1,403 @@
+# run this playbook in test mode:
+#  ansible-playbook --inventory localhost, --check --diff packages.yaml
+# creates ~/.ansible directory for temporary storage
+
+- name: add/remove CentOS packages
+  hosts: all
+  connection: local	# do not use ssh
+  gather_facts: no	# save time
+
+  vars:			# local to this playbook
+
+    forbidden_packages:	# unneeded and unwanted
+      - '*-fonts'
+      - '*.i686'
+      - GeoIP
+      - ModemManager
+      - NetworkManager-adsl
+      - NetworkManager-bluetooth
+      - NetworkManager-libreswan-gnome
+      - NetworkManager-ppp
+      - NetworkManager-team
+      - NetworkManager-wifi
+      - NetworkManager-wwan
+      - PackageKit-command-not-found
+      - PackageKit-gstreamer-plugin
+      - PackageKit-gtk3-module
+      - abrt
+      - adcli
+      - aic94xx-firmware # Adaptec SAS
+      - alsa-plugins-pulseaudio
+      - alsa-utils
+      - at
+      - autoconf
+      - automake
+      - avahi*
+      - baobab
+      - bind-libs-lite
+      - bind-license
+      - bind-utils
+      - biosdevname
+      - bison
+      - blktrace
+      - bpftool
+      - bridge-utils
+      - btrfs-progs
+      - byacc
+      - centos-indexhtml-7
+      - certmonger
+      - cgdcbxd
+      - cheese
+      - cifs-utils
+      - cloud-init
+      - cloud-utils-growpart
+      - cmake
+      - colord
+      - compat-cheese314
+      - containerd.io
+      - crash
+      - crda
+      - cronie-anacron
+      - cryptsetup
+      - cscope
+      - ctags
+      - cups*
+      - cyrus-sasl-plain
+      - deltarpm
+      - device-mapper-multipath
+      - diffstat
+      - dmidecode
+      - dmraid
+      - dmraid-events
+      - dnsmasq
+      - docker-ce
+      - docker-ce-rootless-extras
+      - dosfstools
+      - doxygen
+      - dracut-config-generic
+      - dracut-config-rescue
+      - dracut-network
+      - dvd+rw-tools
+      - e2fsprogs*
+      - elfutils
+      - emacs
+      - empathy
+      - enscript
+      - eog
+      - ethtool
+      - evince
+      - evince-nautilus
+      - fcoe-utils
+      - file-roller-nautilus
+      - firstboot
+      - flex
+      - fprintd-pam
+      - fuse-devel
+      - fuse-python
+      - fuse-sshfs
+      - gcc
+      - gcc-c++
+      - gcc-gfortran
+      - gedit
+      - ghostscript-cups
+      - glib-networking
+      - glusterfs-fuse
+      - gnome-*
+      - gsettings-desktop-schemas
+      - gssproxy
+      - gstreamer*
+      - gtk*
+      - gucharmap
+      - gutenprint
+      - gutenprint-cups
+      - gvfs-*
+      - hpijs
+      - hunspell*
+      - hyperv-daemons
+      - i*-firmware	# WiFi and television
+      - ibus-*
+      - icedtea-web
+      - indent
+      - initial-setup-gui
+      - intltool
+      - ipa-client
+      - iprutils
+      - jansson
+      - java
+      - jbigkit-libs
+      - kexec-tools
+      - keyutils
+      - kmod-kvdo
+      - kpatch
+      - ledmon
+      - libaio
+      - libbasicobjects
+      - libcgroup-tools
+      - libcollection
+      - libdaemon
+      - libgudev1
+      - libini_config
+      - libjpeg-turbo
+      - libmodman
+      - libnfsidmap
+      - libnl3-cli
+      - libpath_utils
+      - libproxy
+      - libproxy-mozjs
+      - libref_array
+      - libreport-plugin-mailx
+      - libsane-hpaio
+      - libsoup
+      - libss
+      - libstoragemgmt
+      - libtalloc
+      - libteam
+      - libtevent
+      - libtiff
+      - libtool
+      - libverto-tevent
+      - libwayland-egl
+      - libwebp
+      - libyami
+      - lldpad
+      - lrzsz
+      - lshw
+      - lvm2
+      - lzo
+      - m17n-contrib
+      - mdadm
+      - mesa-*
+      - microcode_ctl
+      - mlocate
+      - mosh
+      - mousetweaks
+      - mtr
+      - nano
+      - nautilus
+      - nautilus-sendto
+      - nfs-utils
+      - nfs4-acl-tools
+      - ntp
+      - ntpdate
+      - ntsysv
+      - oddjob-mkhomedir
+      - open-vm-tools-desktop
+      - orca
+      - paps
+      - patchutils
+      - pcp
+      - pinfo
+      - plymouth
+      - plymouth-system-theme
+      - pm-utils
+      - pnm2ppa
+      - ppp
+      - psacct
+      - pulseaudio
+      - pulseaudio-module-x11
+      - pulseaudio-utils
+      - python-cheetah
+      - python-configobj
+      - python-jsonpatch
+      - python-jsonpointer
+      - python-ldap
+      - python-perf
+      - python-pillow
+      - python-prettytable
+      - python-pygments
+      - python-pyudev
+      - python-requests
+      - python-smbc
+      - python-urllib3
+      - python-virtualenv
+      - python2-boto
+      - python2-markdown
+      - python2-pip
+      - qemu-guest-agent
+      - qgnomeplatform
+      - quota*
+      - rcs
+      - rdate
+      - rdma-core
+      - realmd
+      - redhat-rpm-config
+      - rfkill
+      - rootfiles
+      - rpcbind
+      - rpm-build
+      - rpm-sign
+      - samba-client
+      - sane-backends-drivers-scanners
+      - scl-utils
+      - seahorse
+      - setserial
+      - setuptool
+      - sg3_utils
+      - sg3_utils-libs
+      - singularity
+      - smartmontools
+      - snappy
+      - sos
+      - spice-streaming-agent
+      - spice-vdagent
+      - sssd
+      - sssd-client
+      - strace
+      - subversion
+      - sushi
+      - swig
+      - sysstat
+      - system-config-printer
+      - system-config-printer-udev
+      - systemtap
+      - targetcli
+      - tcp_wrappers
+      - teamd
+      - time
+      - totem
+      - totem-nautilus
+      - tuned
+      - vdo
+      - vinagre
+      - virt-what
+      - wodim
+      - words
+      - wvdial
+      - xdg-user-dirs-gtk
+      - xfsdump
+      - xorg-x11-*
+      - xvattr
+      - yelp
+      - yum-langpacks
+      - zsh
+
+    required_packages:
+      - ansible		# a chicken and egg problem
+      - chrony
+      - cronie-noanacron
+      - emacs-nox	# for Jeff
+      - epel-release	# install to make ansible visible to yum
+      - git
+      - iptables-services
+      - less
+      - libselinux-python # ansible requires this when SELinux is enabled
+      - lsof
+      - nscd
+      - openssh-clients
+      - openssh-server
+      - perl
+      - postfix
+      - psmisc
+      - rsync
+      - rsyslog
+      - sudo
+      - tcpdump
+      - tcsh		# for Jeff
+      - traceroute
+      - yum-utils	# provides package-cleanup(1)
+
+    disabled_services:
+      - systemd-readahead-collect
+      - systemd-readahead-replay
+
+    enabled_services:
+      - nscd
+      - tmp.mount
+
+  tasks:
+
+    - name: use default installonly_limit in yum
+      lineinfile:
+        path: /etc/yum.conf
+        regexp: '^installonly_limit='
+        state: absent
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+
+    - name: clean package requirements upon removal
+      lineinfile:
+        path: /etc/yum.conf
+        insertafter: ^\[main\]
+        line: clean_requirements_on_remove=1
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+
+# Install required packages before removing forbidden packages to
+# prevent removing and then reinstalling any common dependencies.
+# This removes a race condition in the transition from cronie-anacron
+# to cronie-noanacron.  The downside is that removals win in any
+# conflicts, so watch for repeated install/remove cycles.
+
+    - name: install CentOS packages
+      package:
+        name: "{{ required_packages }}"
+        state: present
+
+    - name: remove CentOS packages
+      package:
+        name: "{{ forbidden_packages }}"
+        state: absent
+
+    - name: disable chrony IPv6
+      copy:
+        dest: /etc/sysconfig/chronyd
+        content: |
+          # Command-line options for chronyd
+          # use only IPv4
+          OPTIONS="-4"
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+      notify: restart chronyd
+
+    - name: disable Postfix IPv6
+      lineinfile:
+        path: /etc/postfix/main.cf
+        backrefs: yes
+        regexp: '^(inet_protocols\s*=\s*)all'
+        line: '\1ipv4'
+        state: present
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+      notify: reload postfix
+
+    - name: enable desired services
+      service:
+        name: "{{ item }}"
+        enabled: yes
+      with_items: "{{ enabled_services }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: disable unwanted services
+      service:
+        name: "{{ item }}"
+        enabled: no
+      with_items: "{{ disabled_services }}"
+      loop_control:
+        label: "{{ item }}"
+
+#    - name: print all Ansible variables
+#      debug:
+#        var: vars
+
+  handlers:
+
+    - name: restart chronyd
+      service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+
+    - name: reload postfix
+      service:
+        name: postfix
+        state: reloaded
+        enabled: yes
