@@ -70,8 +70,7 @@
       - dmraid
       - dmraid-events
       - dnsmasq
-      - docker-ce
-      - docker-ce-rootless-extras
+      - docker-*
       - dosfstools
       - doxygen
       - dracut-config-generic

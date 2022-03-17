@@ -17,6 +17,7 @@
     begone:
       - /.readahead
       - /etc/gshadow-	# see the group shadow file task in another playbook
+      - /etc/yum.repos.d/docker-ce.repo
 
     unprivileged:
       - /usr/bin/pkexec		# use su or sudo instead
