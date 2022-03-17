@@ -80,6 +80,9 @@
     - name: is Duo repo GPG key file present?
       stat:
         path: /etc/pki/rpm-gpg/RPM-GPG-KEY-Duo
+        get_attributes: no	# save time
+        get_checksum: no	# save time
+        get_mime: no		# save time
       register: duo_repo_key_file
 
     - name: is Duo repo GPG key already imported?
@@ -119,6 +122,9 @@
     - name: is Duo repo file installed?
       stat:
         path: /etc/yum.repos.d/duosecurity.repo
+        get_attributes: no	# save time
+        get_checksum: no	# save time
+        get_mime: no		# save time
       register: duo_repo_file
 
     - name: install Duo packages

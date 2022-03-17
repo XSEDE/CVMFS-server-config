@@ -74,6 +74,9 @@
     - name: is OSG repo GPG key file present?
       stat:
         path: /etc/pki/rpm-gpg/RPM-GPG-KEY-OSG
+        get_attributes: no	# save time
+        get_checksum: no	# save time
+        get_mime: no		# save time
       register: osg_repo_key_file
 
     - name: is OSG repo GPG key already imported?
