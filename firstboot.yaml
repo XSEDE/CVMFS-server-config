@@ -78,5 +78,6 @@
 
 # all import_playbook files are parsed before execution
 - import_playbook: packages.yaml
+- import_playbook: duo.yaml
 - import_playbook: cvmfs.yaml
 - import_playbook: files.yaml
