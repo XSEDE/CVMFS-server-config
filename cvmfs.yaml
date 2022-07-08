@@ -136,6 +136,12 @@
         enabled: yes
       when: httpd_package_installed.rc == 0
 
+    # could use the ansible.posix.firewalld module
+    - name: open firewall for http
+      command: firewall-cmd --permanent --add-service=http
+      changed_when: false	# no visible side effects
+      when: httpd_package_installed.rc == 0
+
     - name: establish CVMFS re-sign cron job
       cron:
         name: re-sign cvmfs whitelist
