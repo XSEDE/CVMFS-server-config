@@ -12,6 +12,18 @@
 
   tasks:
 
+    - name: set host domain name to dyn.xsede.org
+      lineinfile:
+        path: /etc/hostname
+        backrefs: yes
+        regexp: '^([^.]+)'
+        line: '\1.dyn.xsede.org'
+        state: present
+        backup: no
+        owner: '0'
+        group: '0'
+        mode: 0644
+
     - name: set default locale to C
       copy:
         dest: /etc/locale.conf
