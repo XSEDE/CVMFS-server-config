@@ -1,0 +1,98 @@
+# run this playbook in test mode:
+#  ansible-playbook --inventory localhost, --check --diff accounts.yaml
+# creates ~/.ansible directory for temporary storage
+
+- name: add/remove unix users and groups
+  hosts: localhost
+  connection: local	# do not use ssh
+  gather_facts: no	# save time
+
+  vars:
+
+    xsede_groups:		# "groups" is reserved
+      - admin
+
+    xsede_users:
+      centos:
+        group: centos
+        comment: Cloud User
+      cyoun:
+        comment: Choonhan Youn,cyoun@ucsd.edu,858-534-5071
+      eblau:
+        comment: Eric Blau,blau@mcs.anl.gov,630-252-5638
+      enstrom:
+        comment: Peter Enstrom,enstrom@ncsa.illinois.edu,217-244-2334
+      jdmakey:
+        comment: Jeff Makey,jeff@sdsc.edu,858-534-5174
+        shell: /bin/tcsh
+        groups: systemd-journal
+      jkm:
+        comment: Jonghoon Kim,jkm@illinois.edu,217-300-6455
+      katesdsc:
+        comment: Kate Kaya,kate@sdsc.edu,858-534-5124
+      navarro:
+        comment: John-Paul Navarro,navarro@mcs.anl.gov,630-252-1233
+      qualys:
+        group: users
+        comment: XSEDE Qualys
+      software:
+        comment: Local Software,navarro@mcs.anl.gov
+      ssmallen:
+        comment: Shava Smallen,ssmallen@sdsc.edu,858-822-0962
+
+  tasks:
+
+    - name: is /etc/sudoers.d writable?
+      stat:
+        path: /etc/sudoers.d
+        get_attributes: no	# save time
+        get_checksum: no	# save time
+        get_mime: no		# save time
+      register: sudoers_dir
+
+    - name: add unix groups
+      group:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ xsede_groups }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: add unix users
+      user:
+        name: "{{ item.key }}"
+        group: "{{ item.value.group | default('admin') }}"
+        comment: "{{ item.value.comment }}"
+        shell: "{{ item.value.shell | default('/bin/bash') }}"	# default is /bin/sh
+        groups: "{{ item.value.groups | default(omit) }}"
+        state: present
+      with_dict: "{{ xsede_users }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: add authorized_keys
+      authorized_key:
+        user: "{{ item.key }}"
+        key: "{{ item.value.publickey }}"
+        state: present
+      with_dict: "{{ xsede_users }}"
+      when:
+        - sudoers_dir.stat.writeable	# implies running as root
+        - item.value.publickey is defined
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: enable sudo for admin group
+      copy:
+        dest: /etc/sudoers.d/50-xsede-admin-group
+        content: |
+          %admin ALL=(ALL) NOPASSWD: ALL
+        backup: no
+        owner: '0'
+        group: '0'
+        mode: 0440
+      when: sudoers_dir.stat.writeable
+
+#    - name: print all Ansible variables
+#      debug:
+#        var: vars
