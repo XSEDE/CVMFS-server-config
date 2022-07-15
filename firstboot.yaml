@@ -52,6 +52,25 @@
       args:
         removes: /etc/gshadow
 
+    - name: ensure /var/log/lastlog exists
+      copy:
+        dest: /var/log/lastlog
+        content: ''
+        force: no	# create empty file if it does not already exist
+        owner: '0'
+        group: '0'
+        mode: 0644
+
+    - name: remove unwanted mounts from fstab file
+      lineinfile:
+        path: /etc/fstab
+        regexp: '\sceph\s|\s/media/volume/'
+        state: absent
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+
     - name: disable IPv6
       copy:
         dest: /etc/sysctl.d/50-noipv6.conf

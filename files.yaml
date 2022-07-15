@@ -17,7 +17,11 @@
     begone:
       - /.readahead
       - /etc/gshadow-	# see the group shadow file task in another playbook
+      - /etc/systemd/system/multi-user.target.wants/nvidia-topologyd.service
       - /etc/yum.repos.d/docker-ce.repo
+      - /usr/lib/systemd/system/nvidia-topologyd.service
+      - /var/tmp/abrt
+      - /var/tmp/cloud-init
 
     unprivileged:
       - /usr/bin/pkexec		# use su or sudo instead
