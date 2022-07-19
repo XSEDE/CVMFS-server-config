@@ -2,6 +2,11 @@
 #  ansible-playbook --inventory localhost, --check --diff cvmfs.yaml
 # creates ~/.ansible directory for temporary storage
 
+# After running this playbook, activate the CVMFS server:
+#  sudo cvmfs_server mkfs -o cvmfs_colorado colorado.xsede.org
+# and then restore /etc/cvmfs and /srv/cvmfs from backups.
+# Run this playbook one more time to create the cron job and reboot.
+
 - name: install CVMFS
   hosts: localhost
   connection: local	# do not use ssh
@@ -129,6 +134,18 @@
       failed_when: false	# ok for package to be not installed
       register: httpd_package_installed
 
+    - name: listen on port 8000
+      copy:
+        dest: /etc/httpd/conf.d/cvmfs.conf
+        content: |
+          Listen 8000
+          KeepAlive on
+        backup: yes
+        owner: '0'
+        group: '0'
+        mode: 0644
+      when: httpd_package_installed.rc == 0
+
     - name: start httpd
       service:
         name: httpd
@@ -139,7 +156,12 @@
     # could use the ansible.posix.firewalld module
     - name: open firewall for http
       command: firewall-cmd --permanent --add-service=http
-      changed_when: false	# no visible side effects
+      changed_when: false	# hard to parse /etc/firewalld/zones/public.xml
+      when: httpd_package_installed.rc == 0
+
+    - name: open firewall for http port 8000
+      command: firewall-cmd --permanent --add-port=8000/tcp
+      changed_when: false	# hard to parse /etc/firewalld/zones/public.xml
       when: httpd_package_installed.rc == 0
 
     - name: establish CVMFS re-sign cron job
